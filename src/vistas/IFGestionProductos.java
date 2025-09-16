@@ -4,6 +4,10 @@
  */
 package vistas;
 
+import java.awt.event.ActionEvent;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
+
 /**
  *
  * @author TuMachGalan
@@ -15,6 +19,129 @@ public class IFGestionProductos extends javax.swing.JInternalFrame {
      */
     public IFGestionProductos() {
         initComponents();
+        // Configurar modelo de la tabla
+        DefaultTableModel modelo = (DefaultTableModel) jTableDescripcion.getModel();
+        modelo.setRowCount(0); // Limpia filas por si acaso
+
+        // ---- DATOS DE PRUEBA ----
+        modelo.addRow(new Object[]{"101", "Coca Cola", "Bebidas", "1500", 20});
+        modelo.addRow(new Object[]{"102", "Fideos", "Almacen", "900", 50});
+        modelo.addRow(new Object[]{"103", "Lavandina", "Limpieza", "750", 15});
+
+        // ---- RUBROS DE PRUEBA ----
+        cbRubro.removeAllItems();
+        cbRubro.addItem("Bebidas");
+        cbRubro.addItem("Almacén");
+        cbRubro.addItem("Limpieza");
+
+        // ---- FILTROS DE PRUEBA ----
+        CbFiltrarCtgria.removeAllItems();
+        CbFiltrarCtgria.addItem("Todos");
+        CbFiltrarCtgria.addItem("Bebidas");
+        CbFiltrarCtgria.addItem("Almacén");
+        CbFiltrarCtgria.addItem("Limpieza");
+
+/////////////////////////////////////////////////////////////////////////////////
+
+        // Definir modelo para la tabla con las columnas correctas
+//        javax.swing.table.DefaultTableModel modelo = new javax.swing.table.DefaultTableModel(
+//                new Object[]{"Código", "Descripción", "Precio", "Categoría", "Stock"}, 0
+//        );
+        jTableDescripcion.setModel(modelo);
+
+        // Estado inicial de botones
+        BtonGuardar.setEnabled(false);
+        BtonActualizar.setEnabled(false);
+        BtonEliminar.setEnabled(false);
+
+        // Evento Guardar
+        BtonGuardar.addActionListener((ActionEvent e) -> {
+            if (validarCampos()) {
+                modelo.addRow(new Object[]{
+                    txtCodigo.getText(),
+                    txtDescripcion.getText(),
+                    txtPrecio.getText(),
+                    cbRubro.getSelectedItem().toString(),
+                    spStock.getValue()
+                });
+                JOptionPane.showMessageDialog(IFGestionProductos.this, "Producto guardado con éxito.");
+                BtonGuardar.setEnabled(false);
+            }
+        });
+
+        // Evento click en tabla (con proteccion contra nulls)
+        jTableDescripcion.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                int fila = jTableDescripcion.getSelectedRow();
+                if (fila >= 0) {
+                    Object codigo = jTableDescripcion.getValueAt(fila, 0);
+                    Object desc = jTableDescripcion.getValueAt(fila, 1);
+                    Object precio = jTableDescripcion.getValueAt(fila, 2);
+                    Object rubro = jTableDescripcion.getValueAt(fila, 3);
+                    Object stock = jTableDescripcion.getValueAt(fila, 4);
+
+                    if (codigo != null) {
+                        txtCodigo.setText(codigo.toString());
+                    }
+                    if (desc != null) {
+                        txtDescripcion.setText(desc.toString());
+                    }
+                    if (precio != null) {
+                        txtPrecio.setText(precio.toString());
+                    }
+                    if (rubro != null) {
+                        cbRubro.setSelectedItem(rubro.toString());
+                    }
+                    if (stock != null) {
+                        spStock.setValue(Integer.valueOf(stock.toString()));
+                    }
+
+                    BtonActualizar.setEnabled(true);
+                    BtonEliminar.setEnabled(true);
+                }
+            }
+        });
+
+        // Evento Actualizar
+        BtonActualizar.addActionListener(e -> {
+            int fila = jTableDescripcion.getSelectedRow();
+            if (fila >= 0 && validarCampos()) {
+                jTableDescripcion.setValueAt(txtCodigo.getText(), fila, 0);
+                jTableDescripcion.setValueAt(txtDescripcion.getText(), fila, 1);
+                jTableDescripcion.setValueAt(txtPrecio.getText(), fila, 2);
+                jTableDescripcion.setValueAt(cbRubro.getSelectedItem().toString(), fila, 3);
+                jTableDescripcion.setValueAt(spStock.getValue(), fila, 4);
+                JOptionPane.showMessageDialog(this, "Producto actualizado.");
+            }
+        });
+
+        BtonBuscar.addActionListener(new java.awt.event.ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                String codigoBuscado = txtCodigo.getText().trim();
+                if (codigoBuscado.isEmpty()) {
+                    JOptionPane.showMessageDialog(IFGestionProductos.this, "Ingrese un código para buscar.");
+                    return;
+                }
+                DefaultTableModel modelo = (DefaultTableModel) jTableDescripcion.getModel();
+                boolean encontrado = false;
+                for (int i = 0; i < modelo.getRowCount(); i++) {
+                    if (modelo.getValueAt(i, 0).toString().equals(codigoBuscado)) {
+                        jTableDescripcion.setRowSelectionInterval(i, i);
+                        jTableDescripcion.scrollRectToVisible(jTableDescripcion.getCellRect(i, 0, true));
+                        encontrado = true;
+                        break;
+                    }
+                }
+                if (!encontrado) {
+                    JOptionPane.showMessageDialog(IFGestionProductos.this, "No se encontró un producto con ese código.");
+                    jTableDescripcion.clearSelection();
+                }
+            }
+        });
+        
+        BtonCerrar.addActionListener(e -> this.dispose());
     }
 
     /**
@@ -82,13 +209,14 @@ public class IFGestionProductos extends javax.swing.JInternalFrame {
 
         jTableDescripcion.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null}
             },
             new String [] {
-                "Codigo", "Descripcion", "Precio", "Stock"
+                "Codigo", "Descripcion", "Precio", "Categoria", "Stock"
             }
         ));
         jScrollPane1.setViewportView(jTableDescripcion);
@@ -109,6 +237,11 @@ public class IFGestionProductos extends javax.swing.JInternalFrame {
         BtonEliminar.setText("Eliminar");
 
         BtonBuscar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/lupa.png"))); // NOI18N
+        BtonBuscar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                BtonBuscarActionPerformed(evt);
+            }
+        });
 
         BtonCerrar.setText("Cerrar");
 
@@ -117,36 +250,35 @@ public class IFGestionProductos extends javax.swing.JInternalFrame {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(25, 25, 25)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(66, 66, 66)
-                        .addComponent(txtTitulo))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(txtFiltrar)
-                        .addGap(18, 18, 18)
-                        .addComponent(CbFiltrarCtgria, javax.swing.GroupLayout.PREFERRED_SIZE, 144, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(21, 21, 21)
+                        .addGap(25, 25, 25)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jtxtDcrpcion)
-                            .addComponent(jtxtPrice)
-                            .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jtxtRbro))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(cbRubro, javax.swing.GroupLayout.PREFERRED_SIZE, 149, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                .addComponent(txtPrecio, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 161, Short.MAX_VALUE)
-                                .addComponent(txtDescripcion, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(txtCodigo, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                        .addGap(32, 32, 32)
-                        .addComponent(BtonBuscar, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE))))
-            .addGroup(layout.createSequentialGroup()
-                .addGap(14, 14, 14)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 464, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(66, 66, 66)
+                                .addComponent(txtTitulo))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(txtFiltrar)
+                                .addGap(18, 18, 18)
+                                .addComponent(CbFiltrarCtgria, javax.swing.GroupLayout.PREFERRED_SIZE, 144, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(21, 21, 21)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jtxtDcrpcion)
+                                    .addComponent(jtxtPrice)
+                                    .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jtxtRbro))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(cbRubro, javax.swing.GroupLayout.PREFERRED_SIZE, 149, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                        .addComponent(txtPrecio, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 161, Short.MAX_VALUE)
+                                        .addComponent(txtDescripcion, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addComponent(txtCodigo, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                                .addGap(32, 32, 32)
+                                .addComponent(BtonBuscar, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE))))
                     .addGroup(layout.createSequentialGroup()
+                        .addGap(14, 14, 14)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(BtondNuevo)
                             .addGroup(layout.createSequentialGroup()
@@ -164,7 +296,11 @@ public class IFGestionProductos extends javax.swing.JInternalFrame {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(BtonCerrar)
-                                    .addComponent(BtonEliminar)))))))
+                                    .addComponent(BtonEliminar))))))
+                .addGap(24, 24, 24))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 464, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -174,11 +310,11 @@ public class IFGestionProductos extends javax.swing.JInternalFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(CbFiltrarCtgria, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(txtFiltrar))
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(31, 31, 31)
+                        .addGap(37, 37, 37)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(jtxtCdgo)
                             .addComponent(txtCodigo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -196,7 +332,7 @@ public class IFGestionProductos extends javax.swing.JInternalFrame {
                             .addComponent(jtxtRbro))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED))
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(18, 18, 18)
+                        .addGap(24, 24, 24)
                         .addComponent(BtonBuscar, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(45, 45, 45)
                         .addComponent(BtonCerrar)
@@ -228,6 +364,10 @@ public class IFGestionProductos extends javax.swing.JInternalFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_cbRubroActionPerformed
 
+    private void BtonBuscarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtonBuscarActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_BtonBuscarActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton BtonActualizar;
@@ -252,4 +392,26 @@ public class IFGestionProductos extends javax.swing.JInternalFrame {
     private java.awt.TextField txtPrecio;
     private javax.swing.JLabel txtTitulo;
     // End of variables declaration//GEN-END:variables
+
+    private boolean validarCampos() {
+        if (txtCodigo.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "El código no puede estar vacío.");
+            return false;
+        }
+        if (txtDescripcion.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "La descripción no puede estar vacía.");
+            return false;
+        }
+        if (txtPrecio.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "El precio no puede estar vacío.");
+            return false;
+        }
+        if (cbRubro.getSelectedItem() == null) {
+            JOptionPane.showMessageDialog(this, "Debe seleccionar un rubro.");
+            return false;
+        }
+        // Si querés, podés agregar más validaciones: número válido, stock positivo, etc.
+        return true; // todo OK
+    }
+
 }
