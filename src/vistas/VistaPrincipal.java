@@ -1,16 +1,21 @@
-package vistas;
+package Vistas;
+
+import Clases.Categoria;
+import Clases.Producto;
+import java.util.TreeSet;
 
 /**
  *
  * @author Nehuen
  */
 public class VistaPrincipal extends javax.swing.JFrame {
-
+    public static TreeSet<Producto> listaProductos= new TreeSet<>();
     /**
      * Creates new form VistaPrincipal
      */
     public VistaPrincipal() {
         initComponents();
+        cargarProductos();
     }
 
     /**
@@ -170,6 +175,7 @@ public class VistaPrincipal extends javax.swing.JFrame {
             java.util.logging.Logger.getLogger(VistaPrincipal.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
+        //</editor-fold>
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
@@ -189,4 +195,15 @@ public class VistaPrincipal extends javax.swing.JFrame {
     private javax.swing.JMenuItem jMenuItem3;
     private javax.swing.JMenuItem jMenuItem4;
     // End of variables declaration//GEN-END:variables
+    
+    private void cargarProductos(){
+        //(int codigo, String descripcion, double precio, int stock, Categoria rubro)
+        listaProductos.add(new Producto(10,"Azucar 1KG",1200.75,10,Categoria.COMESTIBLES));
+        listaProductos.add(new Producto(8,"Yerba 1KG",800.35,10,Categoria.COMESTIBLES));
+        listaProductos.add(new Producto(10,"Aceite 1.5 Lts",2900.72,10,Categoria.COMESTIBLES));
+        listaProductos.add(new Producto(10,"SHAMPOO 1Lts",180.85,10,Categoria.PERFUMERIA));
+        listaProductos.add(new Producto(10,"Traapo de Piso ",580.45,10,Categoria.LIMPIEZA));
+        listaProductos.add(new Producto(10,"Perfume Piso",180.95,10,Categoria.LIMPIEZA));
+    }
+
 }
