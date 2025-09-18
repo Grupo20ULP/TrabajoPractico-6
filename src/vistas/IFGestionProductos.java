@@ -20,33 +20,33 @@ public class IFGestionProductos extends javax.swing.JInternalFrame {
     public IFGestionProductos() {
         initComponents();
         // Configurar modelo de la tabla
-        DefaultTableModel modelo = (DefaultTableModel) jTableDescripcion.getModel();
-        modelo.setRowCount(0); // Limpia filas por si acaso
-
-        // ---- DATOS DE PRUEBA ----
-        modelo.addRow(new Object[]{"101", "Coca Cola", "Bebidas", "1500", 20});
-        modelo.addRow(new Object[]{"102", "Fideos", "Almacen", "900", 50});
-        modelo.addRow(new Object[]{"103", "Lavandina", "Limpieza", "750", 15});
-
-        // ---- RUBROS DE PRUEBA ----
-        cbRubro.removeAllItems();
-        cbRubro.addItem("Bebidas");
-        cbRubro.addItem("Almacén");
-        cbRubro.addItem("Limpieza");
-
-        // ---- FILTROS DE PRUEBA ----
-        CbFiltrarCtgria.removeAllItems();
-        CbFiltrarCtgria.addItem("Todos");
-        CbFiltrarCtgria.addItem("Bebidas");
-        CbFiltrarCtgria.addItem("Almacén");
-        CbFiltrarCtgria.addItem("Limpieza");
+////        DefaultTableModel modelo = (DefaultTableModel) jTableDescripcion.getModel();
+////        modelo.setRowCount(0); // Limpia filas por si acaso
+////
+////        // ---- DATOS DE PRUEBA ----
+////        modelo.addRow(new Object[]{"101", "Coca Cola", "Bebidas", "1500", 20});
+////        modelo.addRow(new Object[]{"102", "Fideos", "Almacen", "900", 50});
+////        modelo.addRow(new Object[]{"103", "Lavandina", "Limpieza", "750", 15});
+////
+////        // ---- RUBROS DE PRUEBA ----
+////        cbRubro.removeAllItems();
+////        cbRubro.addItem("Bebidas");
+////        cbRubro.addItem("Almacén");
+////        cbRubro.addItem("Limpieza");
+////
+////        // ---- FILTROS DE PRUEBA ----
+////        CbFiltrarCtgria.removeAllItems();
+////        CbFiltrarCtgria.addItem("Todos");
+////        CbFiltrarCtgria.addItem("Bebidas");
+////        CbFiltrarCtgria.addItem("Almacén");
+////        CbFiltrarCtgria.addItem("Limpieza");
 
 /////////////////////////////////////////////////////////////////////////////////
 
         // Definir modelo para la tabla con las columnas correctas
-//        javax.swing.table.DefaultTableModel modelo = new javax.swing.table.DefaultTableModel(
-//                new Object[]{"Código", "Descripción", "Precio", "Categoría", "Stock"}, 0
-//        );
+        javax.swing.table.DefaultTableModel modelo = new javax.swing.table.DefaultTableModel(
+                new Object[]{"Código", "Descripción", "Precio", "Categoría", "Stock"}, 0
+        );
         jTableDescripcion.setModel(modelo);
 
         // Estado inicial de botones
