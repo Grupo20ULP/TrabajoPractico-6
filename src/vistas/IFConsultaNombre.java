@@ -5,7 +5,7 @@
 package Vistas;
 
 /**
- *   
+ *    
  * @author Nehuen 
  */
 public class IFConsultaNombre extends javax.swing.JInternalFrame {
