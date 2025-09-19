@@ -4,17 +4,36 @@
  */
 package Vistas;
 
+import Clases.Categoria;
+import Clases.Producto;
+import javax.swing.table.DefaultTableModel;
+
 /** 
  *
- * @author Nehuen
+ * @author Federico Galan
  */
 public class IFConsultaRubro extends javax.swing.JInternalFrame {
+
+    private DefaultTableModel modeloTabla = new DefaultTableModel() {
+        @Override
+        public boolean isCellEditable(int f, int c) {
+            return false;
+        }
+    };
 
     /**
      * Creates new form IFConsultaRubro
      */
     public IFConsultaRubro() {
         initComponents();
+        armarTabla();
+        cargarComboRubros();
+        mostrarTodos();
+        
+        // Agregar listener al combo box para filtrar por rubro
+        jComboBox1.addActionListener(e -> {
+            filtrarPorRubro();
+        });
     }
 
     /**
@@ -30,6 +49,9 @@ public class IFConsultaRubro extends javax.swing.JInternalFrame {
         jComboBox1 = new javax.swing.JComboBox<>();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
+
+        setClosable(true);
+        setMaximizable(true);
 
         label1.setText("Rubro:");
 
@@ -78,11 +100,62 @@ public class IFConsultaRubro extends javax.swing.JInternalFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox<String> jComboBox1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTable jTable1;
     private java.awt.Label label1;
     // End of variables declaration//GEN-END:variables
+
+    private void armarTabla() {
+        modeloTabla.addColumn("Codigo");
+        modeloTabla.addColumn("Descripcion");
+        modeloTabla.addColumn("Precio");
+        modeloTabla.addColumn("Categoria");
+        modeloTabla.addColumn("Stock");
+        jTable1.setModel(modeloTabla);
+    }
+
+    private void cargarComboRubros() {
+        jComboBox1.removeAllItems();
+        jComboBox1.addItem("Todos");
+        for (Categoria cat : Categoria.values()) {
+            jComboBox1.addItem(cat.toString());
+        }
+    }
+
+    private void mostrarTodos() {
+        modeloTabla.setRowCount(0);
+        for (Producto p : VistaPrincipal.listaProductos) {
+            modeloTabla.addRow(new Object[]{
+                p.getCodigo(),
+                p.getDescripcion(),
+                p.getPrecio(),
+                p.getRubro(),
+                p.getStock()
+            });
+        }
+    }
+
+    private void filtrarPorRubro() {
+        String seleccion = jComboBox1.getSelectedItem().toString();
+        modeloTabla.setRowCount(0);
+        
+        if (seleccion.equals("Todos")) {
+            mostrarTodos();
+        } else {
+            Categoria rubroSeleccionado = Categoria.valueOf(seleccion);
+            for (Producto p : VistaPrincipal.listaProductos) {
+                if (p.getRubro().equals(rubroSeleccionado)) {
+                    modeloTabla.addRow(new Object[]{
+                        p.getCodigo(),
+                        p.getDescripcion(),
+                        p.getPrecio(),
+                        p.getRubro(),
+                        p.getStock()
+                    });
+                }
+            }
+        }
+    }
 }
