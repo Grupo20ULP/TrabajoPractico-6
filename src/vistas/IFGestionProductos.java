@@ -4,8 +4,10 @@
  */
 package Vistas;
 
+import Clases.Categoria;
+import Clases.Producto;
 import java.awt.event.ActionEvent;
-import javax.swing.JOptionPane; 
+import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -19,83 +21,43 @@ public class IFGestionProductos extends javax.swing.JInternalFrame {
      */
     public IFGestionProductos() {
         initComponents();
-        // Configurar modelo de la tabla
-        DefaultTableModel modelo = (DefaultTableModel) jTableDescripcion.getModel();
-        modelo.setRowCount(0); // Limpia filas por si acaso
-
-        // ---- DATOS DE PRUEBA ----
-        modelo.addRow(new Object[]{"101", "Coca Cola", "Bebidas", "1500", 20});
-        modelo.addRow(new Object[]{"102", "Fideos", "Almacen", "900", 50});
-        modelo.addRow(new Object[]{"103", "Lavandina", "Limpieza", "750", 15});
-
-        // ---- RUBROS DE PRUEBA ----
+        
+        // No pude generar por cada boton, asi es que los filtro y relleno antes de cada evento
         cbRubro.removeAllItems();
-        cbRubro.addItem("Bebidas");
-        cbRubro.addItem("Almacén");
-        cbRubro.addItem("Limpieza");
-
-        // ---- FILTROS DE PRUEBA ----
+        for (Categoria cat : Categoria.values()) {
+            cbRubro.addItem(cat.toString());
+        }
         CbFiltrarCtgria.removeAllItems();
         CbFiltrarCtgria.addItem("Todos");
-        CbFiltrarCtgria.addItem("Bebidas");
-        CbFiltrarCtgria.addItem("Almacén");
-        CbFiltrarCtgria.addItem("Limpieza");
+        for (Categoria cat : Categoria.values()) {
+            CbFiltrarCtgria.addItem(cat.toString());
+        }
+        cbRubro.setSelectedIndex(0);
+        CbFiltrarCtgria.setSelectedIndex(0);
 
-/////////////////////////////////////////////////////////////////////////////////
+        // Defino modelo de tabla
+        model = new DefaultTableModel(
+                new Object[]{"Codigo", "Descripcion", "Precio", "Categoria", "Stock"}, 0
+        );
+        jTableDescripcion.setModel(model);
+        cargarTablaDesdeTreeSet();
 
-        // Definir modelo para la tabla con las columnas correctas
-//        javax.swing.table.DefaultTableModel modelo = new javax.swing.table.DefaultTableModel(
-//                new Object[]{"Código", "Descripción", "Precio", "Categoría", "Stock"}, 0
-//        );
-        jTableDescripcion.setModel(modelo);
-
-        // Estado inicial de botones
-        BtonGuardar.setEnabled(false);
+        // estado inicial de botones por que al guardar un item los otros se bloqueaban permanente
+        BtonGuardar.setEnabled(true);
         BtonActualizar.setEnabled(false);
         BtonEliminar.setEnabled(false);
 
-        // Evento Guardar
-        BtonGuardar.addActionListener((ActionEvent e) -> {
-            if (validarCampos()) {
-                modelo.addRow(new Object[]{
-                    txtCodigo.getText(),
-                    txtDescripcion.getText(),
-                    txtPrecio.getText(),
-                    cbRubro.getSelectedItem().toString(),
-                    spStock.getValue()
-                });
-                JOptionPane.showMessageDialog(IFGestionProductos.this, "Producto guardado con éxito.");
-                BtonGuardar.setEnabled(false);
-            }
-        });
-
-        // Evento click en tabla (con proteccion contra nulls)
+        //MouseListener para habilitar botones solo al seleccionar fila
         jTableDescripcion.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 int fila = jTableDescripcion.getSelectedRow();
                 if (fila >= 0) {
-                    Object codigo = jTableDescripcion.getValueAt(fila, 0);
-                    Object desc = jTableDescripcion.getValueAt(fila, 1);
-                    Object precio = jTableDescripcion.getValueAt(fila, 2);
-                    Object rubro = jTableDescripcion.getValueAt(fila, 3);
-                    Object stock = jTableDescripcion.getValueAt(fila, 4);
-
-                    if (codigo != null) {
-                        txtCodigo.setText(codigo.toString());
-                    }
-                    if (desc != null) {
-                        txtDescripcion.setText(desc.toString());
-                    }
-                    if (precio != null) {
-                        txtPrecio.setText(precio.toString());
-                    }
-                    if (rubro != null) {
-                        cbRubro.setSelectedItem(rubro.toString());
-                    }
-                    if (stock != null) {
-                        spStock.setValue(Integer.valueOf(stock.toString()));
-                    }
+                    txtCodigo.setText(jTableDescripcion.getValueAt(fila, 0).toString());
+                    txtDescripcion.setText(jTableDescripcion.getValueAt(fila, 1).toString());
+                    txtPrecio.setText(jTableDescripcion.getValueAt(fila, 2).toString());
+                    cbRubro.setSelectedItem(jTableDescripcion.getValueAt(fila, 3).toString());
+                    spStock.setValue(Integer.parseInt(jTableDescripcion.getValueAt(fila, 4).toString()));
 
                     BtonActualizar.setEnabled(true);
                     BtonEliminar.setEnabled(true);
@@ -103,45 +65,166 @@ public class IFGestionProductos extends javax.swing.JInternalFrame {
             }
         });
 
-        // Evento Actualizar
-        BtonActualizar.addActionListener(e -> {
-            int fila = jTableDescripcion.getSelectedRow();
-            if (fila >= 0 && validarCampos()) {
-                jTableDescripcion.setValueAt(txtCodigo.getText(), fila, 0);
-                jTableDescripcion.setValueAt(txtDescripcion.getText(), fila, 1);
-                jTableDescripcion.setValueAt(txtPrecio.getText(), fila, 2);
-                jTableDescripcion.setValueAt(cbRubro.getSelectedItem().toString(), fila, 3);
-                jTableDescripcion.setValueAt(spStock.getValue(), fila, 4);
-                JOptionPane.showMessageDialog(this, "Producto actualizado.");
+        // Evento Bton Guardar
+        BtonGuardar.addActionListener(e -> {
+            if (validarCampos()) {
+                int codigo = Integer.parseInt(txtCodigo.getText());
+                String descripcion = txtDescripcion.getText();
+                double precio = Double.parseDouble(txtPrecio.getText());
+                int stock = (Integer) spStock.getValue();
+                Categoria rubro = Categoria.valueOf(cbRubro.getSelectedItem().toString());
+
+                Producto nuevo = new Producto(codigo, descripcion, precio, stock, rubro);
+                VistaPrincipal.listaProductos.add(nuevo);
+
+                cargarTablaDesdeTreeSet();
+
+                // Limpiar campos
+                txtCodigo.setText("");
+                txtDescripcion.setText("");
+                txtPrecio.setText("");
+                spStock.setValue(0);
+                if (cbRubro.getItemCount() > 0) {
+                    cbRubro.setSelectedIndex(0);
+                }
+
+                JOptionPane.showMessageDialog(this, "Producto guardado con Exito.");
             }
         });
 
-        BtonBuscar.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                String codigoBuscado = txtCodigo.getText().trim();
-                if (codigoBuscado.isEmpty()) {
-                    JOptionPane.showMessageDialog(IFGestionProductos.this, "Ingrese un código para buscar.");
-                    return;
-                }
-                DefaultTableModel modelo = (DefaultTableModel) jTableDescripcion.getModel();
-                boolean encontrado = false;
-                for (int i = 0; i < modelo.getRowCount(); i++) {
-                    if (modelo.getValueAt(i, 0).toString().equals(codigoBuscado)) {
-                        jTableDescripcion.setRowSelectionInterval(i, i);
-                        jTableDescripcion.scrollRectToVisible(jTableDescripcion.getCellRect(i, 0, true));
-                        encontrado = true;
+        // Evento BtonActualizar
+        BtonActualizar.addActionListener(e -> {
+            int fila = jTableDescripcion.getSelectedRow();
+            if (fila >= 0 && validarCampos()) {
+                int codigo = Integer.parseInt(txtCodigo.getText());
+
+                Producto buscado = null;
+                for (Producto p : VistaPrincipal.listaProductos) {
+                    if (p.getCodigo() == codigo) {
+                        buscado = p;
                         break;
                     }
                 }
-                if (!encontrado) {
-                    JOptionPane.showMessageDialog(IFGestionProductos.this, "No se encontró un producto con ese código.");
-                    jTableDescripcion.clearSelection();
+                if (buscado != null) {
+                    VistaPrincipal.listaProductos.remove(buscado);
+                }
+
+                Producto modificado = new Producto(
+                        codigo,
+                        txtDescripcion.getText(),
+                        Double.parseDouble(txtPrecio.getText()),
+                        (Integer) spStock.getValue(),
+                        Categoria.valueOf(cbRubro.getSelectedItem().toString())
+                );
+                VistaPrincipal.listaProductos.add(modificado);
+
+                cargarTablaDesdeTreeSet();
+
+                JOptionPane.showMessageDialog(this, "Producto actualizado.");
+
+                // Limpiar campos y deshabilitar botones hasta nueva selección
+                txtCodigo.setText("");
+                txtDescripcion.setText("");
+                txtPrecio.setText("");
+                spStock.setValue(0);
+                if (cbRubro.getItemCount() > 0) {
+                    cbRubro.setSelectedIndex(0);
+                }
+                BtonActualizar.setEnabled(false);
+                BtonEliminar.setEnabled(false);
+            }
+        });
+
+        // Evento BtonEliminar
+        BtonEliminar.addActionListener(e -> {
+            int fila = jTableDescripcion.getSelectedRow();
+            if (fila >= 0) {
+                int codigo = Integer.parseInt(jTableDescripcion.getValueAt(fila, 0).toString());
+
+                Producto aEliminar = null;
+                for (Producto p : VistaPrincipal.listaProductos) {
+                    if (p.getCodigo() == codigo) {
+                        aEliminar = p;
+                        break;
+                    }
+                }
+                if (aEliminar != null) {
+                    VistaPrincipal.listaProductos.remove(aEliminar);
+                }
+
+                cargarTablaDesdeTreeSet();
+
+                JOptionPane.showMessageDialog(this, "Producto eliminado.");
+
+                // Limpiar campos y deshabilitar botones hasta nueva selección
+                txtCodigo.setText("");
+                txtDescripcion.setText("");
+                txtPrecio.setText("");
+                spStock.setValue(0);
+                if (cbRubro.getItemCount() > 0) {
+                    cbRubro.setSelectedIndex(0);
+                }
+                BtonActualizar.setEnabled(false);
+                BtonEliminar.setEnabled(false);
+            }
+        });
+
+        // Filtar por categoria
+        CbFiltrarCtgria.addActionListener(e -> {
+            String seleccion = CbFiltrarCtgria.getSelectedItem().toString();
+            model.setRowCount(0);
+            for (Producto p : VistaPrincipal.listaProductos) {
+                if (seleccion.equals("Todos") || p.getRubro().toString().equals(seleccion)) {
+                    model.addRow(new Object[]{p.getCodigo(), p.getDescripcion(), p.getPrecio(), p.getRubro(), p.getStock()});
                 }
             }
         });
-        
+
+        // Cerrar ventana
         BtonCerrar.addActionListener(e -> this.dispose());
+        BtondNuevo.addActionListener(e -> {
+            // Limpiar campos
+            txtCodigo.setText("");
+            txtDescripcion.setText("");
+            txtPrecio.setText("");
+            spStock.setValue(0);
+
+            if (cbRubro.getItemCount() > 0) {
+                cbRubro.setSelectedIndex(0);
+            }
+
+            // Limpiar selección en tabla
+            jTableDescripcion.clearSelection();
+
+            // Habilitar solo guardar
+            BtonGuardar.setEnabled(true);
+            BtonActualizar.setEnabled(false);
+            BtonEliminar.setEnabled(false);
+        });
+        
+        //Bton Buscar
+        BtonBuscar.addActionListener(e -> {
+            String codigoBuscado = txtCodigo.getText().trim();
+            if (codigoBuscado.isEmpty()) {
+                JOptionPane.showMessageDialog(IFGestionProductos.this, "Ingrese un codigo para buscar.");
+                return;
+            }
+
+            boolean encontrado = false;
+            for (int i = 0; i < jTableDescripcion.getRowCount(); i++) {
+                if (jTableDescripcion.getValueAt(i, 0).toString().equals(codigoBuscado)) {
+                    jTableDescripcion.setRowSelectionInterval(i, i);
+                    jTableDescripcion.scrollRectToVisible(jTableDescripcion.getCellRect(i, 0, true));
+                    encontrado = true;
+                    break;
+                }
+            }
+
+            if (!encontrado) {
+                JOptionPane.showMessageDialog(IFGestionProductos.this, "No se encontro un producto con ese codigo.");
+                jTableDescripcion.clearSelection();
+            }
+        });
     }
 
     /**
@@ -191,7 +274,6 @@ public class IFGestionProductos extends javax.swing.JInternalFrame {
 
         jLabel5.setText("Stock:");
 
-        cbRubro.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         cbRubro.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cbRubroActionPerformed(evt);
@@ -200,7 +282,6 @@ public class IFGestionProductos extends javax.swing.JInternalFrame {
 
         txtFiltrar.setText("Filtrar por Categoría:");
 
-        CbFiltrarCtgria.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         CbFiltrarCtgria.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 CbFiltrarCtgriaActionPerformed(evt);
@@ -286,9 +367,6 @@ public class IFGestionProductos extends javax.swing.JInternalFrame {
                                 .addComponent(jtxtCdgo)))
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
-                                .addGap(34, 34, 34)
-                                .addComponent(spStock, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(layout.createSequentialGroup()
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(BtonGuardar)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -296,11 +374,12 @@ public class IFGestionProductos extends javax.swing.JInternalFrame {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(BtonCerrar)
-                                    .addComponent(BtonEliminar))))))
-                .addGap(24, 24, 24))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 464, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                                    .addComponent(BtonEliminar)))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(34, 34, 34)
+                                .addComponent(spStock, javax.swing.GroupLayout.PREFERRED_SIZE, 47, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 464, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(14, 14, 14))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -392,26 +471,39 @@ public class IFGestionProductos extends javax.swing.JInternalFrame {
     private java.awt.TextField txtPrecio;
     private javax.swing.JLabel txtTitulo;
     // End of variables declaration//GEN-END:variables
+private DefaultTableModel model;
 
     private boolean validarCampos() {
         if (txtCodigo.getText().trim().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "El código no puede estar vacío.");
+            JOptionPane.showMessageDialog(this, "El codigo no puede estar vacio.");
             return false;
         }
         if (txtDescripcion.getText().trim().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "La descripción no puede estar vacía.");
+            JOptionPane.showMessageDialog(this, "La descripcion no puede estar vacia.");
             return false;
         }
         if (txtPrecio.getText().trim().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "El precio no puede estar vacío.");
+            JOptionPane.showMessageDialog(this, "El precio no puede estar vacio.");
             return false;
         }
         if (cbRubro.getSelectedItem() == null) {
             JOptionPane.showMessageDialog(this, "Debe seleccionar un rubro.");
             return false;
         }
-        // Si querés, podés agregar más validaciones: número válido, stock positivo, etc.
-        return true; // todo OK
+        return true;
     }
 
+    private void cargarTablaDesdeTreeSet() {
+        model.setRowCount(0); // limpiar tabla
+        for (Producto p : VistaPrincipal.listaProductos) {
+            model.addRow(new Object[]{
+                p.getCodigo(),
+                p.getDescripcion(),
+                p.getPrecio(),
+                p.getRubro(),
+                p.getStock()
+            });
+
+        }
+    }
 }

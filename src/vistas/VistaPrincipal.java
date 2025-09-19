@@ -200,10 +200,10 @@ public class VistaPrincipal extends javax.swing.JFrame {
         //(int codigo, String descripcion, double precio, int stock, Categoria rubro)
         listaProductos.add(new Producto(10,"Azucar 1KG",1200.75,10,Categoria.COMESTIBLES));
         listaProductos.add(new Producto(8,"Yerba 1KG",800.35,10,Categoria.COMESTIBLES));
-        listaProductos.add(new Producto(10,"Aceite 1.5 Lts",2900.72,10,Categoria.COMESTIBLES));
-        listaProductos.add(new Producto(10,"SHAMPOO 1Lts",180.85,10,Categoria.PERFUMERIA));
-        listaProductos.add(new Producto(10,"Traapo de Piso ",580.45,10,Categoria.LIMPIEZA));
-        listaProductos.add(new Producto(10,"Perfume Piso",180.95,10,Categoria.LIMPIEZA));
+        listaProductos.add(new Producto(3,"Aceite 1.5 Lts",2900.72,10,Categoria.COMESTIBLES));
+        listaProductos.add(new Producto(12,"SHAMPOO 1Lts",180.85,10,Categoria.PERFUMERIA));
+        listaProductos.add(new Producto(7,"Traapo de Piso ",580.45,10,Categoria.LIMPIEZA));
+        listaProductos.add(new Producto(5,"Perfume Piso",180.95,10,Categoria.LIMPIEZA));
     }
 
 }

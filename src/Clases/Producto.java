@@ -74,6 +74,18 @@ public class Producto implements Comparable<Producto> {
             return -1;
         }
     }
+        @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Producto)) return false;
+        Producto p = (Producto) o;
+        return this.codigo == p.codigo;
+    }
+
+    @Override
+    public int hashCode() {
+        return Integer.hashCode(codigo);
+    }
     
     
 }
