@@ -4,6 +4,8 @@
  */
 package Vistas;
 
+import Clases.Producto;
+import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
 /** 
@@ -23,6 +25,7 @@ public class IFConsultaPrecio extends javax.swing.JInternalFrame {
      */
     public IFConsultaPrecio() {
         initComponents();
+        armarTabla();
         
     }
 
@@ -51,6 +54,18 @@ public class IFConsultaPrecio extends javax.swing.JInternalFrame {
         jLabel5.setText("Entre $:");
 
         jLabel6.setText("y");
+
+        jtfMin.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                jtfMinKeyReleased(evt);
+            }
+        });
+
+        jtfMax.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                jtfMaxKeyReleased(evt);
+            }
+        });
 
         jTabla.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -122,6 +137,16 @@ public class IFConsultaPrecio extends javax.swing.JInternalFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private void jtfMinKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jtfMinKeyReleased
+        // TODO add your handling code here:
+        mostrar();
+    }//GEN-LAST:event_jtfMinKeyReleased
+
+    private void jtfMaxKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jtfMaxKeyReleased
+        // TODO add your handling code here:
+        mostrar();
+    }//GEN-LAST:event_jtfMaxKeyReleased
+
     public void armarTabla(){
         modeloTabla.addColumn("Codigo");
         modeloTabla.addColumn("Descripcion");
@@ -129,6 +154,36 @@ public class IFConsultaPrecio extends javax.swing.JInternalFrame {
         modeloTabla.addColumn("Categoria");
         modeloTabla.addColumn("Stock");
         jTabla.setModel(modeloTabla);
+    }
+    private void mostrar(){
+        String minimoTemp = jtfMin.getText().trim();
+        String maximoTemp = jtfMax.getText().trim();
+        
+        double minimo = 0;
+        double maximo = Double.MAX_VALUE;
+        try {
+            if (!minimoTemp.isEmpty()) minimo = Double.parseDouble(minimoTemp);
+            if (!maximoTemp.isEmpty()) maximo = Double.parseDouble(maximoTemp);
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Ingrese valores numéricos válidos");
+            jtfMin.setText("");
+            jtfMax.setText("");
+            return;
+        }
+        modeloTabla.setRowCount(0);
+        
+        for (Producto p : VistaPrincipal.listaProductos) {
+            if (p.getPrecio() >= minimo && p.getPrecio() <= maximo) {
+            Object[] fila = {
+                p.getCodigo(),
+                p.getDescripcion(),
+                p.getPrecio(),
+                p.getRubro(),
+                p.getStock()
+            };
+            modeloTabla.addRow(fila);
+            }
+        }
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
